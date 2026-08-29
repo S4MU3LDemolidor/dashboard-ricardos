@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Ricardo's</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+:root {
+  --red: #aa0000;
+  --red-light: rgba(170,0,0,0.12);
+  --red-dark: #880000;
+  --black: #111111;
+  --black-soft: #222222;
+  --white: #ffffff;
+  --bg: #f5f5f5;
+  --border: #e0e0e0;
+  --gray: #888888;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 14px rgba(0,0,0,0.1);
+  --radius: 12px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--black);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 240px;
+  background: var(--black);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform .3s;
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header h1 { font-size: 18px; font-weight: 700; }
+.sidebar-header span { font-size: 11px; color: var(--red); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+.sidebar-nav { flex:1; padding: 12px 0; overflow-y: auto; }
+
+.nav-section {
+  padding: 8px 20px 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.25);
+  font-weight: 600;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; cursor: pointer;
+  transition: all .15s; font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85); }
+.nav-item.active { background: rgba(255,255,255,0.08); color: var(--white); border-left-color: var(--red); font-weight: 500; }
+.nav-item .material-icons-round { font-size: 20px; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ===== MAIN ===== */
+.main { margin-left: 240px; flex: 1; min-height: 100vh; }
+
+/* ===== TOP BAR ===== */
+.topbar {
+  background: var(--white);
+  padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+  flex-wrap: wrap; gap: 12px;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-left h2 { font-size: 20px; font-weight: 700; }
+
+.menu-toggle { display: none; background: none; border: none; color: var(--black); cursor: pointer; font-size: 24px; }
+
+.topbar-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.store-tabs { display: flex; gap: 3px; background: var(--bg); padding: 3px; border-radius: 8px; }
+
+.store-tab {
+  padding: 7px 16px; border-radius: 6px; border: none;
+  background: transparent; font-family: inherit; font-size: 12px;
+  font-weight: 500; color: var(--gray); cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+
+.store-tab:hover { color: var(--black); }
+.store-tab.active { background: var(--red); color: var(--white); box-shadow: 0 2px 8px rgba(170,0,0,0.3); }
+
+.filter-select {
+  padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px;
+  font-family: inherit; font-size: 12px; font-weight: 500;
+  color: var(--black); background: var(--white); cursor: pointer; outline: none;
+}
+
+.filter-select:focus { border-color: var(--red); }
+
+/* ===== CONTENT ===== */
+.content { padding: 24px 32px; }
+
+/* ===== KPI CARDS ===== */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+
+.kpi-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow); transition: box-shadow .2s;
+  border-left: none;
+}
+
+.kpi-card:hover { box-shadow: var(--shadow-lg); }
+
+.kpi-label {
+  font-size: 11px; color: var(--gray); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.kpi-label .material-icons-round { font-size: 16px; color: var(--red); }
+.kpi-value { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+
+.kpi-sub { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; }
+.kpi-sub.positive { color: var(--black); }
+.kpi-sub.positive::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--black); border-radius: 50%; }
+.kpi-sub.negative { color: var(--red); }
+.kpi-sub.negative::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--red); border-radius: 50%; }
+
+.kpi-sparkline { height: 40px; margin-top: 8px; }
+
+/* ===== CHART CARDS ===== */
+.charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+.charts-grid-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.charts-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+.chart-card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.chart-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.chart-card-subtitle { font-size: 11px; color: var(--gray); margin-bottom: 16px; }
+
+.chart-container { position: relative; width: 100%; }
+.chart-container.h250 { height: 250px; }
+.chart-container.h200 { height: 200px; }
+.chart-container.h180 { height: 180px; }
+.chart-container.h300 { height: 300px; }
+
+/* ===== PROGRESS BARS ===== */
+.progress-list { display: flex; flex-direction: column; gap: 14px; }
+
+.progress-item-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-item-label span:first-child { font-size: 11px; font-weight: 500; color: var(--gray); }
+.progress-item-label span:last-child { font-size: 12px; font-weight: 700; }
+
+.progress-bar-bg { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.progress-bar-fill.red { background: var(--red); }
+.progress-bar-fill.black { background: var(--black); }
+
+/* ===== TABLE ===== */
+.table-wrapper { overflow-x: auto; margin-top: 8px; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th {
+  text-align: left; padding: 10px 12px; font-weight: 700; color: var(--gray);
+  text-transform: uppercase; letter-spacing: 0.5px; font-size: 10px;
+  border-bottom: 2px solid var(--black); white-space: nowrap;
+}
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--red-light); }
+.data-table .total-row td { font-weight: 700; border-top: 2px solid var(--red); background: var(--red-light); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
+}
+.badge.positive { background: rgba(0,0,0,0.06); color: var(--black); }
+.badge.negative { background: var(--red-light); color: var(--red); }
+
+/* ===== SECTION DIVIDER ===== */
+.section-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 3px solid var(--red); display: inline-block;
+}
+
+/* ===== LOADING ===== */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 9999; gap: 16px;
+}
+.loading-overlay.hidden { display: none; }
+
+.spinner {
+  width: 48px; height: 48px;
+  border: 4px solid rgba(255,255,255,0.15);
+  border-top-color: var(--red);
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay p { color: var(--white); font-size: 14px; font-weight: 500; }
+
+/* ===== CONFIG MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+  display: flex; align-items: center; justify-content: center; z-index: 10000;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal {
+  background: var(--white); border-radius: 16px; padding: 40px;
+  max-width: 460px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  border-top: 4px solid var(--red);
+}
+
+.modal h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.modal p { font-size: 13px; color: var(--gray); margin-bottom: 24px; line-height: 1.5; }
+.modal label { display: block; font-size: 11px; font-weight: 700; color: var(--black); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.modal input {
+  width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 14px; margin-bottom: 16px; outline: none; transition: border-color .2s;
+}
+.modal input:focus { border-color: var(--red); }
+.modal button {
+  width: 100%; padding: 14px; background: var(--red); color: var(--white);
+  border: none; border-radius: 8px; font-family: inherit; font-size: 14px;
+  font-weight: 700; cursor: pointer; transition: background .2s;
+}
+.modal button:hover { background: var(--red-dark); }
+.modal .error-msg { color: var(--red); font-size: 12px; margin-bottom: 12px; display: none; font-weight: 600; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } .charts-grid-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .menu-toggle { display: block; }
+  .topbar { padding: 12px 16px; }
+  .content { padding: 16px; }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .charts-grid, .charts-grid-equal, .charts-grid-3 { grid-template-columns: 1fr; }
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- CONFIG MODAL -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal">
+    <h2>Configurar API</h2>
+    <p>Insira os dados de acesso a API do GD para carregar o dashboard. As informacoes ficam salvas neste navegador.</p>
+    <label>URL da API</label>
+    <input type="url" id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <label>Token de Autenticacao</label>
+    <input type="password" id="cfgToken" placeholder="Seu token de acesso">
+    <div class="error-msg" id="cfgError"></div>
+    <button onclick="saveConfig()">Conectar</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p id="loadingText">Carregando dados...</p>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1>Ricardo's</h1>
+    <span>Dashboard GD</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" data-section="dashboard">
+      <span class="material-icons-round">dashboard</span> Dashboard
+    </div>
+    <div class="nav-item" data-section="vendas">
+      <span class="material-icons-round">trending_up</span> Vendas
+    </div>
+    <div class="nav-item" data-section="financeiro">
+      <span class="material-icons-round">account_balance</span> Financeiro
+    </div>
+    <div class="nav-item" data-section="despesas">
+      <span class="material-icons-round">receipt_long</span> Despesas
+    </div>
+    <div class="nav-item" data-section="estoque">
+      <span class="material-icons-round">inventory_2</span> Estoque
+    </div>
+    <div class="nav-section" style="margin-top:12px">Sistema</div>
+    <div class="nav-item" onclick="showConfigModal()">
+      <span class="material-icons-round">settings</span> Configuracoes
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);display:flex;align-items:center;gap:6px">
+      <span class="material-icons-round" style="font-size:14px">schedule</span>
+      <span id="lastUpdateText">--</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <span class="material-icons-round">menu</span>
+      </button>
+      <h2 id="pageTitle">Dashboard</h2>
+    </div>
+    <div class="topbar-filters">
+      <div class="store-tabs" id="storeTabs">
+        <button class="store-tab active" data-loja="ALL">Todas</button>
+        <button class="store-tab" data-loja="MEGA CENTER">Confresa</button>
+        <button class="store-tab" data-loja="IMPERIAL">Gurupi</button>
+        <button class="store-tab" data-loja="PORTO BELO">Porto</button>
+      </div>
+      <select class="filter-select" id="yearSelect">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+      </select>
+      <select class="filter-select" id="monthSelect">
+        <option value="auto">Mes Atual</option>
+        <option value="all">Ano Todo</option>
+        <option value="0">Janeiro</option>
+        <option value="1">Fevereiro</option>
+        <option value="2">Marco</option>
+        <option value="3">Abril</option>
+        <option value="4">Maio</option>
+        <option value="5">Junho</option>
+        <option value="6">Julho</option>
+        <option value="7">Agosto</option>
+        <option value="8">Setembro</option>
+        <option value="9">Outubro</option>
+        <option value="10">Novembro</option>
+        <option value="11">Dezembro</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="content" id="mainContent"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'ricardos_dashboard_config';
+const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+const MESES_LABEL = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const LOJA_NOMES = {
+  'PORTO BELO': 'Porto - Porto Belo',
+  'IMPERIAL': 'Gurupi - Imperial',
+  'MEGA CENTER': 'Confresa - Mega Center'
+};
+const RED = '#aa0000';
+const RED_LIGHT = 'rgba(170,0,0,0.12)';
+const BLACK = '#111111';
+const BLACK_LIGHT = 'rgba(17,17,17,0.08)';
+const WHITE = '#ffffff';
+
+let apiUrl = '', apiToken = '';
+let dadosResumo = null, dadosTidy = {};
+let currentLoja = 'ALL', currentAno = '2026', currentSection = 'dashboard';
+let selectedMonth = 'auto';
+let charts = {};
+
+// ===== CONFIG =====
+function getConfig() {
+  try { const c = JSON.parse(localStorage.getItem(STORAGE_KEY)); return c && c.url && c.token ? c : null; } catch { return null; }
+}
+
+function showConfigModal() { document.getElementById('configModal').classList.remove('hidden'); }
+
+async function saveConfig() {
+  const url = document.getElementById('cfgUrl').value.trim();
+  const token = document.getElementById('cfgToken').value.trim();
+  const err = document.getElementById('cfgError');
+  if (!url || !token) { err.textContent = 'Preencha todos os campos.'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  try {
+    const res = await fetch(`${url}?view=meta&token=${encodeURIComponent(token)}`);
+    const data = await res.json();
+    if (data.erro) throw new Error(data.erro);
+    if (!data.lojas) throw new Error('Resposta inesperada');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ url, token }));
+    apiUrl = url; apiToken = token;
+    document.getElementById('configModal').classList.add('hidden');
+    loadAllData();
+  } catch (e) { err.textContent = 'Erro: ' + e.message; err.style.display = 'block'; }
+}
+
+// ===== API =====
+async function apiFetch(view, params = '') {
+  const url = `${apiUrl}?view=${view}${params ? '&' + params : ''}&token=${encodeURIComponent(apiToken)}`;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch(url, { redirect: 'follow' });
+    const text = await res.text();
+    if (text.startsWith('<!') || text.startsWith('<')) {
+      if (attempt < 2) { await new Promise(r => setTimeout(r, 1500)); continue; }
+      throw new Error('A API retornou HTML em vez de JSON. Verifique a URL e tente recarregar.');
+    }
+    try { return JSON.parse(text); } catch { throw new Error('Resposta invalida da API.'); }
+  }
+}
+
+async function loadAllData() {
+  showLoading('Carregando resumo...');
+  try {
+    dadosResumo = await apiFetch('resumo');
+    await new Promise(r => setTimeout(r, 500));
+    for (const loja of ['PORTO BELO','IMPERIAL','MEGA CENTER']) {
+      showLoading(`Carregando ${LOJA_NOMES[loja]}...`);
+      const data = await apiFetch('tidy', `loja=${encodeURIComponent(loja)}&ano=${currentAno}`);
+      await new Promise(r => setTimeout(r, 500));
+      dadosTidy[loja] = {};
+      for (const reg of data.registros) {
+        if (!dadosTidy[loja][reg.bloco]) dadosTidy[loja][reg.bloco] = [];
+        dadosTidy[loja][reg.bloco].push(reg);
+      }
+    }
+    hideLoading();
+    renderPage();
+  } catch (e) { hideLoading(); alert('Erro ao carregar dados: ' + e.message); }
+}
+
+function showLoading(t) { document.getElementById('loadingText').textContent = t; document.getElementById('loadingOverlay').classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+
+// ===== HELPERS =====
+function fmt(v) {
+  if (v == null || isNaN(v)) return 'R$ 0,00';
+  return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtShort(v) {
+  if (v == null || isNaN(v)) return 'R$ 0';
+  const a = Math.abs(v);
+  if (a >= 1e6) return 'R$ ' + (v/1e6).toFixed(1) + 'M';
+  if (a >= 1e3) return 'R$ ' + (v/1e3).toFixed(0) + 'K';
+  return 'R$ ' + v.toFixed(0);
+}
+function fmtPct(v) { return v == null || isNaN(v) ? '0%' : (v * 100).toFixed(1) + '%'; }
+
+function getMonth() {
+  if (selectedMonth === 'all') return 11;
+  if (selectedMonth !== 'auto') return parseInt(selectedMonth);
+  const now = new Date();
+  return currentAno === String(now.getFullYear()) ? now.getMonth() : 11;
+}
+
+function isFullYear() { return selectedMonth === 'all' || (selectedMonth === 'auto' && currentAno !== String(new Date().getFullYear())); }
+
+function getResumo(loja, ano) {
+  if (!dadosResumo || !dadosResumo.lojas) return null;
+  const l = dadosResumo.lojas[loja];
+  return l ? l[ano] || null : null;
+}
+
+function getTidyTotal(loja, bloco, linhaName) {
+  if (!dadosTidy[loja] || !dadosTidy[loja][bloco]) return new Array(12).fill(0);
+  const regs = dadosTidy[loja][bloco].filter(r => r.linha === linhaName);
+  const result = new Array(12).fill(0);
+  for (const r of regs) { const i = MESES.indexOf(r.coluna); if (i >= 0) result[i] = Number(r.valor) || 0; }
+  return result;
+}
+
+function sumArrays(...arrs) { return arrs[0].map((_, i) => arrs.reduce((s, a) => s + (a[i] || 0), 0)); }
+
+function destroyCharts() { Object.values(charts).forEach(c => { try { c.destroy(); } catch {} }); charts = {}; }
+
+function createChart(id, cfg) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  const chart = new Chart(canvas.getContext('2d'), cfg);
+  charts[id] = chart;
+  return chart;
+}
+
+// Chart defaults — black, red, white only
+const CHART_FONT = { family: 'Inter', size: 11 };
+const GRID_COLOR = 'rgba(0,0,0,0.05)';
+
+function baseChartOpts(extra = {}) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { usePointStyle: true, padding: 14, font: { ...CHART_FONT, size: 11 } } },
+      tooltip: { backgroundColor: BLACK, titleFont: CHART_FONT, bodyFont: CHART_FONT, callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.parsed.y) } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: CHART_FONT } },
+      y: { grid: { color: GRID_COLOR }, ticks: { font: CHART_FONT, callback: v => fmtShort(v) } }
+    },
+    ...extra
+  };
+}
+
+// ===== RENDER PAGE =====
+function renderPage() {
+  destroyCharts();
+  if (dadosResumo && dadosResumo.geradoEm) {
+    const d = new Date(dadosResumo.geradoEm);
+    document.getElementById('lastUpdateText').textContent = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  }
+  ({ dashboard: renderDashboard, vendas: renderVendas, financeiro: renderFinanceiro, despesas: renderDespesas, estoque: renderEstoque }[currentSection] || renderDashboard)();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  const lojas = currentLoja === 'ALL' ? ['PORTO BELO','IMPERIAL','MEGA CENTER'] : [currentLoja];
+  const cm = getMonth();
+
+  const fy = isFullYear();
+  let totalVendas = 0, totalVendasAnt = 0, totalVendasMes = 0, totalVendasMesAnt = 0;
+  let margemSum = 0, margemCount = 0;
+  let vendasPorMes = new Array(12).fill(0), vendasAntPorMes = new Array(12).fill(0), reposicaoPorMes = new Array(12).fill(0);
+
+  for (const loja of lojas) {
+    const r = getResumo(loja, currentAno);
+    if (!r) continue;
+    totalVendas += r.vendasTotalAno;
+    if (fy) {
+      totalVendasMes += r.vendasTotalAno;
+      if (r.vendasAnoAnterior) totalVendasMesAnt += r.vendasAnoAnterior.reduce((a, b) => a + b, 0);
+    } else {
+      totalVendasMes += r.vendasPorMes[cm] || 0;
+      if (r.vendasAnoAnterior) totalVendasMesAnt += r.vendasAnoAnterior[cm] || 0;
+    }
+    if (r.vendasAnoAnterior) totalVendasAnt += r.vendasAnoAnterior.reduce((a, b) => a + b, 0);
+    for (let i = 0; i <= cm; i++) { if (r.margemPorMes[i]) { margemSum += r.margemPorMes[i]; margemCount++; } }
+    vendasPorMes = sumArrays(vendasPorMes, r.vendasPorMes);
+    if (r.vendasAnoAnterior) vendasAntPorMes = sumArrays(vendasAntPorMes, r.vendasAnoAnterior);
+    reposicaoPorMes = sumArrays(reposicaoPorMes, r.reposicaoPorMes);
+  }
+
+  const margemMedia = margemCount > 0 ? margemSum / margemCount : 0;
+  const diffAno = totalVendasAnt ? (totalVendas - totalVendasAnt) / totalVendasAnt : 0;
+  const diffMes = totalVendasMesAnt ? (totalVendasMes - totalVendasMesAnt) / totalVendasMesAnt : 0;
+  const repoTotal = reposicaoPorMes.reduce((a, b) => a + b, 0);
+  const periodoLabel = fy ? 'Ano Todo' : MESES_LABEL[cm];
+  const periodoCompLabel = fy ? (Number(currentAno)-1) : MESES_LABEL[cm] + '/' + (Number(currentAno)-1);
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label"><span class="material-icons-round">payments</span> Vendas ${currentAno}</div>
+        <div class="kpi-value">${fmtShort(totalVendas)}</div>
+        <div class="kpi-sub ${diffAno >= 0 ? 'positive' : 'negative'}">
+          <span class="material-icons-round" style="font-size:14px">${diffAno >= 0 ? 'arrow_upward' : 'arrow_downward'}</span>
+          ${fmtPct(Math.abs(diffAno))} vs ano anterior
+        </div>
+        <div class="kpi-sparkline"><canvas id="sparkVendas"></canvas></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><span class="material-icons-round">today</span> Vendas ${periodoLabel}</div>
+        <div class="kpi-value">${fmtShort(totalVendasMes)}</div>
+        <div class="kpi-sub ${diffMes >= 0 ? 'positive' : 'negative'}">
+          <span class="material-icons-round" style="font-size:14px">${diffMes >= 0 ? 'arrow_upward' : 'arrow_downward'}</span>
+          ${fmtPct(Math.abs(diffMes))} vs ${periodoCompLabel}
+        </div>
+        <div class="kpi-sparkline"><canvas id="sparkMes"></canvas></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><span class="material-icons-round">percent</span> Margem Media</div>
+        <div class="kpi-value">${fmtPct(margemMedia)}</div>
+        <div class="kpi-sub" style="color:var(--gray)">Media ${fy ? currentAno : 'ate ' + MESES_LABEL[cm] + '/' + currentAno}</div>
+        <div class="kpi-sparkline"><canvas id="sparkMargem"></canvas></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><span class="material-icons-round">inventory</span> Reposicao</div>
+        <div class="kpi-value">${fmtShort(repoTotal)}</div>
+        <div class="kpi-sub" style="color:var(--gray)">Acumulado ${currentAno}</div>
+        <div class="kpi-sparkline"><canvas id="sparkRepo"></canvas></div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Vendas Mensais — ${currentAno} vs ${Number(currentAno)-1}</div>
+        <div class="chart-card-subtitle">Comparativo mensal de faturamento</div>
+        <div class="chart-container h250"><canvas id="chartComparativo"></canvas></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="chart-card" style="flex:1">
+          <div class="chart-card-title">Margem de Lucro</div>
+          <div class="chart-card-subtitle">Media ponderada</div>
+          <div class="chart-container h200"><canvas id="chartDonut"></canvas></div>
+        </div>
+        <div class="chart-card" style="flex:1">
+          <div class="chart-card-title">Variacao vs Ano Anterior</div>
+          <div class="chart-card-subtitle">Diferenca % mensal</div>
+          <div class="chart-container h200"><canvas id="chartVariacao"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Faturamento por Mes</div>
+        <div class="chart-card-subtitle">${currentAno}${fy ? '' : ' — ' + MESES_LABEL[cm] + ' em destaque'}</div>
+        <div class="chart-container h250"><canvas id="chartBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Indicadores</div>
+        <div class="chart-card-subtitle">Proporcao sobre vendas totais</div>
+        <div class="progress-list" id="progressList"></div>
+      </div>
+    </div>
+
+    ${currentLoja === 'ALL' ? '<div class="section-title">Desempenho por Loja</div><div class="charts-grid-3" id="storeCards"></div>' :
+    `<div class="charts-grid-equal">
+      <div class="chart-card">
+        <div class="chart-card-title">Reposicao vs Vendas</div>
+        <div class="chart-card-subtitle">${LOJA_NOMES[currentLoja]}</div>
+        <div class="chart-container h250"><canvas id="chartRepo"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Tabela Mensal</div>
+        <div class="chart-card-subtitle">${LOJA_NOMES[currentLoja]}</div>
+        <div class="table-wrapper" id="tabelaVendas"></div>
+      </div>
+    </div>`}
+  `;
+
+  setTimeout(() => {
+    renderSparkline('sparkVendas', vendasPorMes.slice(0, cm + 1));
+    renderSparkline('sparkMes', vendasPorMes.slice(Math.max(0, cm - 5), cm + 1));
+    const mArr = []; for (const l of lojas) { const r = getResumo(l, currentAno); if (r) for (let i = 0; i <= cm; i++) if (r.margemPorMes[i]) mArr.push(r.margemPorMes[i]); }
+    renderSparkline('sparkMargem', mArr.length ? mArr : [0]);
+    renderSparkline('sparkRepo', reposicaoPorMes.slice(0, cm + 1));
+
+    // Comparativo line
+    createChart('chartComparativo', {
+      type: 'line',
+      data: { labels: MESES_LABEL, datasets: [
+        { label: currentAno, data: vendasPorMes, borderColor: RED, backgroundColor: RED_LIGHT, borderWidth: 2.5, fill: true, tension: .35, pointRadius: 3, pointBackgroundColor: RED },
+        { label: String(Number(currentAno)-1), data: vendasAntPorMes, borderColor: BLACK, borderWidth: 2, borderDash: [5,3], fill: false, tension: .35, pointRadius: 2, pointBackgroundColor: BLACK }
+      ]},
+      options: baseChartOpts()
+    });
+
+    // Donut
+    const pct = Math.min(margemMedia * 100, 100);
+    createChart('chartDonut', {
+      type: 'doughnut',
+      data: { labels: ['Margem','Restante'], datasets: [{ data: [pct, 100 - pct], backgroundColor: [RED, '#e0e0e0'], borderWidth: 0, cutout: '75%' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } },
+      plugins: [{ id: 'ct', afterDraw(c) {
+        const { ctx, width: w, height: h } = c; ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '700 22px Inter'; ctx.fillStyle = BLACK; ctx.fillText(pct.toFixed(1)+'%', w/2, h/2-6);
+        ctx.font = '400 10px Inter'; ctx.fillStyle = '#888'; ctx.fillText('Margem', w/2, h/2+14); ctx.restore();
+      }}]
+    });
+
+    // Variacao
+    const diffs = vendasPorMes.map((v, i) => { const a = vendasAntPorMes[i]; return a ? ((v-a)/a)*100 : 0; });
+    const slicedDiffs = diffs.slice(0, cm + 1);
+    createChart('chartVariacao', {
+      type: 'bar',
+      data: { labels: MESES_LABEL.slice(0, cm+1), datasets: [{ data: slicedDiffs, backgroundColor: slicedDiffs.map(v => v >= 0 ? BLACK : RED), borderRadius: 3, maxBarThickness: 20 }] },
+      options: { ...baseChartOpts(), plugins: { legend: { display: false }, tooltip: { backgroundColor: BLACK, callbacks: { label: ctx => (ctx.parsed.y >= 0?'+':'')+ctx.parsed.y.toFixed(1)+'%' } } }, scales: { x: { grid:{display:false}, ticks:{font:{...CHART_FONT, size:9}} }, y: { grid:{color:GRID_COLOR}, ticks:{font:{...CHART_FONT,size:9},callback:v=>v+'%'} } } }
+    });
+
+    // Bar
+    createChart('chartBar', {
+      type: 'bar',
+      data: { labels: MESES_LABEL, datasets: [{ label: 'Vendas', data: vendasPorMes, backgroundColor: fy ? RED : vendasPorMes.map((_,i) => i === cm ? RED : BLACK), borderRadius: 6, maxBarThickness: 40 }] },
+      options: { ...baseChartOpts(), plugins: { legend: { display: false }, tooltip: { backgroundColor: BLACK, callbacks: { label: ctx => fmt(ctx.parsed.y) } } } }
+    });
+
+    // Progress
+    renderProgressBars(totalVendas, repoTotal);
+
+    if (currentLoja === 'ALL') renderStoreCards(cm);
+    else { renderRepoArea(currentLoja); renderTabelaVendas(currentLoja, cm); }
+  }, 50);
+}
+
+function renderSparkline(id, data) {
+  createChart(id, {
+    type: 'line',
+    data: { labels: data.map((_,i)=>i), datasets: [{ data, borderColor: RED, borderWidth: 2, fill: true, backgroundColor: RED_LIGHT, tension: .4, pointRadius: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend:{display:false}, tooltip:{enabled:false} }, scales: { x:{display:false}, y:{display:false} } }
+  });
+}
+
+function renderProgressBars(totalVendas, repoTotal) {
+  const el = document.getElementById('progressList');
+  if (!el) return;
+  const items = [{ label: 'Reposicao', value: fmtShort(repoTotal), pct: totalVendas ? Math.min((repoTotal/totalVendas)*100,100) : 0, color: 'red' }];
+  for (const loja of ['PORTO BELO','IMPERIAL','MEGA CENTER']) {
+    const r = getResumo(loja, currentAno);
+    if (!r) continue;
+    items.push({ label: LOJA_NOMES[loja].split(' - ')[0], value: fmtShort(r.vendasTotalAno), pct: totalVendas ? Math.min((r.vendasTotalAno/totalVendas)*100,100) : 0, color: 'black' });
+  }
+  el.innerHTML = items.map(it => `<div><div class="progress-item-label"><span>${it.label}</span><span>${it.value}</span></div><div class="progress-bar-bg"><div class="progress-bar-fill ${it.color}" style="width:${it.pct}%"></div></div></div>`).join('');
+}
+
+function renderStoreCards(cm) {
+  const el = document.getElementById('storeCards');
+  if (!el) return;
+  let html = '';
+  for (const loja of ['MEGA CENTER','IMPERIAL','PORTO BELO']) {
+    const r = getResumo(loja, currentAno);
+    if (!r) continue;
+    const vm = r.vendasPorMes[cm]||0, va = r.vendasAnoAnterior ? r.vendasAnoAnterior[cm]||0 : 0;
+    const diff = va ? (vm-va)/va : 0; const isPos = diff >= 0;
+    html += `<div class="chart-card">
+      <div class="chart-card-title">${LOJA_NOMES[loja]}</div>
+      <div class="chart-card-subtitle">Acumulado: ${fmtShort(r.vendasTotalAno)}</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div><div style="font-size:10px;color:var(--gray)">${MESES_LABEL[cm]}/${currentAno}</div><div style="font-size:20px;font-weight:700">${fmtShort(vm)}</div></div>
+        <div class="badge ${isPos?'positive':'negative'}"><span class="material-icons-round" style="font-size:12px">${isPos?'arrow_upward':'arrow_downward'}</span>${fmtPct(Math.abs(diff))}</div>
+      </div>
+      <div class="chart-container h180"><canvas id="sc_${loja.replace(/ /g,'_')}"></canvas></div>
+    </div>`;
+  }
+  el.innerHTML = html;
+  setTimeout(() => {
+    for (const loja of ['MEGA CENTER','IMPERIAL','PORTO BELO']) {
+      const r = getResumo(loja, currentAno); if (!r) continue;
+      createChart('sc_'+loja.replace(/ /g,'_'), {
+        type: 'line', data: { labels: MESES_LABEL, datasets: [{ data: r.vendasPorMes, borderColor: RED, backgroundColor: RED_LIGHT, borderWidth: 2, fill: true, tension: .35, pointRadius: 2, pointBackgroundColor: RED }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.parsed.y)}}}, scales:{x:{grid:{display:false},ticks:{font:{...CHART_FONT,size:9}}},y:{grid:{color:GRID_COLOR},ticks:{font:{...CHART_FONT,size:9},callback:v=>fmtShort(v)}}} }
+      });
+    }
+  }, 50);
+}
+
+function renderRepoArea(loja) {
+  const r = getResumo(loja, currentAno); if (!r) return;
+  createChart('chartRepo', {
+    type: 'line', data: { labels: MESES_LABEL, datasets: [
+      { label: 'Vendas', data: r.vendasPorMes, borderColor: RED, backgroundColor: RED_LIGHT, borderWidth: 2, fill: true, tension: .35 },
+      { label: 'Reposicao', data: r.reposicaoPorMes, borderColor: BLACK, borderDash: [5,3], borderWidth: 2, fill: false, tension: .35 }
+    ]}, options: baseChartOpts()
+  });
+}
+
+function renderTabelaVendas(loja, cm) {
+  const r = getResumo(loja, currentAno); if (!r) return;
+  const fy = isFullYear();
+  const el = document.getElementById('tabelaVendas'); if (!el) return;
+  let html = '<table class="data-table"><thead><tr><th>Mes</th><th>Vendas</th><th>Reposicao</th><th>Margem</th><th>Var. %</th></tr></thead><tbody>';
+  for (let i = 0; i <= cm; i++) {
+    const d = r.diferencaPctMes?r.diferencaPctMes[i]:0; const p = d >= 0;
+    html += `<tr${!fy && i===cm?' style="background:'+RED_LIGHT+'"':''}><td><strong>${MESES_LABEL[i]}</strong></td><td>${fmt(r.vendasPorMes[i])}</td><td>${fmt(r.reposicaoPorMes[i])}</td><td>${fmtPct(r.margemPorMes[i])}</td><td><span class="badge ${p?'positive':'negative'}">${p?'+':''}${fmtPct(d)}</span></td></tr>`;
+  }
+  html += `<tr class="total-row"><td><strong>Total</strong></td><td>${fmt(r.vendasTotalAno)}</td><td>${fmt(r.reposicaoPorMes.reduce((a,b)=>a+b,0))}</td><td>--</td><td>--</td></tr></tbody></table>`;
+  el.innerHTML = html;
+}
+
+// ===== VENDAS =====
+function renderVendas() {
+  const cm = getMonth();
+  const fy = isFullYear();
+  let html = '<div class="section-title">Vendas Detalhadas</div>';
+  html += `<div class="chart-card" style="margin-bottom:24px"><div class="chart-card-title">Comparativo por Loja — ${fy ? 'Ano Todo' : 'ate ' + MESES_LABEL[cm]} ${currentAno}</div><div class="table-wrapper"><table class="data-table"><thead><tr><th>Mes</th>`;
+  for (const l of ['MEGA CENTER','IMPERIAL','PORTO BELO']) html += `<th>${LOJA_NOMES[l].split(' - ')[0]}</th>`;
+  html += '<th>Total</th></tr></thead><tbody>';
+  const tot = {'MEGA CENTER':0,'IMPERIAL':0,'PORTO BELO':0,t:0};
+  for (let i = 0; i <= cm; i++) {
+    html += `<tr${!fy && i===cm?' style="background:'+RED_LIGHT+'"':''}><td><strong>${MESES_LABEL[i]}</strong></td>`;
+    let rt = 0;
+    for (const l of ['MEGA CENTER','IMPERIAL','PORTO BELO']) { const r=getResumo(l,currentAno); const v=r?r.vendasPorMes[i]:0; rt+=v; tot[l]+=v; html+=`<td>${fmt(v)}</td>`; }
+    tot.t += rt; html += `<td><strong>${fmt(rt)}</strong></td></tr>`;
+  }
+  html += `<tr class="total-row"><td><strong>Total</strong></td>`;
+  for (const l of ['MEGA CENTER','IMPERIAL','PORTO BELO']) html += `<td>${fmt(tot[l])}</td>`;
+  html += `<td><strong>${fmt(tot.t)}</strong></td></tr></tbody></table></div></div>`;
+
+  html += `<div class="charts-grid-equal">
+    <div class="chart-card"><div class="chart-card-title">Vendas Empilhadas</div><div class="chart-container h300"><canvas id="chartStacked"></canvas></div></div>
+    <div class="chart-card"><div class="chart-card-title">Participacao por Loja</div><div class="chart-container h300"><canvas id="chartPie"></canvas></div></div>
+  </div>`;
+
+  document.getElementById('mainContent').innerHTML = html;
+  setTimeout(() => {
+    const colors = [RED, BLACK, '#888888'];
+    const ds = ['MEGA CENTER','IMPERIAL','PORTO BELO'].map((l,i) => { const r=getResumo(l,currentAno); return { label:LOJA_NOMES[l].split(' - ')[0], data:r?r.vendasPorMes:new Array(12).fill(0), backgroundColor:colors[i], borderRadius:4 }; });
+    createChart('chartStacked', { type:'bar', data:{labels:MESES_LABEL,datasets:ds}, options:{...baseChartOpts(), scales:{x:{stacked:true,grid:{display:false},ticks:{font:CHART_FONT}},y:{stacked:true,grid:{color:GRID_COLOR},ticks:{font:CHART_FONT,callback:v=>fmtShort(v)}}}} });
+
+    const pd = ['MEGA CENTER','IMPERIAL','PORTO BELO'].map(l=>{const r=getResumo(l,currentAno);return r?r.vendasTotalAno:0;});
+    createChart('chartPie', { type:'doughnut', data:{labels:['Confresa','Gurupi','Porto'],datasets:[{data:pd,backgroundColor:colors,borderWidth:3,borderColor:WHITE}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:16,font:{...CHART_FONT,size:12}}},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.parsed)}}}} });
+  }, 50);
+}
+
+// ===== FINANCEIRO =====
+function renderFinanceiro() {
+  const lojas = currentLoja === 'ALL' ? ['PORTO BELO','IMPERIAL','MEGA CENTER'] : [currentLoja];
+  const cm = getMonth();
+  const fy = isFullYear();
+  const pl = fy ? 'Ano Todo' : MESES_LABEL[cm];
+  let tE = new Array(12).fill(0), tS = new Array(12).fill(0), tR = new Array(12).fill(0), tP = new Array(12).fill(0);
+  for (const l of lojas) {
+    tE = sumArrays(tE, getTidyTotal(l,'entradas','TOTAL DAS ENTRADA GERAL'));
+    tS = sumArrays(tS, getTidyTotal(l,'saidas','TOTAL DAS SAIDAS'));
+    tR = sumArrays(tR, getTidyTotal(l,'receber','TOTAL GERAL'));
+    tP = sumArrays(tP, getTidyTotal(l,'pagar','TOTAL GERAL'));
+  }
+  const vE = fy ? tE.reduce((a,b)=>a+b,0) : tE[cm];
+  const vS = fy ? tS.reduce((a,b)=>a+b,0) : tS[cm];
+  const vR = fy ? tR.reduce((a,b)=>a+b,0) : tR[cm];
+  const vP = fy ? tP.reduce((a,b)=>a+b,0) : tP[cm];
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-title">Financeiro</div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">south_west</span> Entradas ${pl}</div><div class="kpi-value">${fmtShort(vE)}</div><div class="kpi-sparkline"><canvas id="spE"></canvas></div></div>
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">north_east</span> Saidas ${pl}</div><div class="kpi-value" style="color:var(--red)">${fmtShort(vS)}</div><div class="kpi-sparkline"><canvas id="spS"></canvas></div></div>
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">account_balance_wallet</span> A Receber</div><div class="kpi-value">${fmtShort(vR)}</div><div class="kpi-sparkline"><canvas id="spR"></canvas></div></div>
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">credit_card</span> A Pagar</div><div class="kpi-value" style="color:var(--red)">${fmtShort(vP)}</div><div class="kpi-sparkline"><canvas id="spP"></canvas></div></div>
+    </div>
+    <div class="charts-grid-equal">
+      <div class="chart-card"><div class="chart-card-title">Entradas vs Saidas</div><div class="chart-container h250"><canvas id="chartFluxo"></canvas></div></div>
+      <div class="chart-card"><div class="chart-card-title">A Receber vs A Pagar</div><div class="chart-container h250"><canvas id="chartRP"></canvas></div></div>
+    </div>`;
+
+  setTimeout(() => {
+    renderSparkline('spE', tE.slice(0,cm+1)); renderSparkline('spS', tS.slice(0,cm+1));
+    renderSparkline('spR', tR.slice(0,cm+1)); renderSparkline('spP', tP.slice(0,cm+1));
+
+    createChart('chartFluxo', { type:'bar', data:{labels:MESES_LABEL,datasets:[
+      {label:'Entradas',data:tE,backgroundColor:BLACK,borderRadius:4,maxBarThickness:28},
+      {label:'Saidas',data:tS,backgroundColor:RED,borderRadius:4,maxBarThickness:28}
+    ]}, options:baseChartOpts() });
+
+    createChart('chartRP', { type:'line', data:{labels:MESES_LABEL,datasets:[
+      {label:'A Receber',data:tR,borderColor:BLACK,backgroundColor:BLACK_LIGHT,fill:true,tension:.35,borderWidth:2},
+      {label:'A Pagar',data:tP,borderColor:RED,backgroundColor:RED_LIGHT,fill:true,tension:.35,borderWidth:2}
+    ]}, options:baseChartOpts() });
+  }, 50);
+}
+
+// ===== DESPESAS =====
+function renderDespesas() {
+  const lojas = currentLoja === 'ALL' ? ['PORTO BELO','IMPERIAL','MEGA CENTER'] : [currentLoja];
+  const cm = getMonth();
+  const fy = isFullYear();
+  const pl = fy ? 'Ano Todo' : MESES_LABEL[cm];
+  let dT = new Array(12).fill(0), iT = new Array(12).fill(0);
+  for (const l of lojas) {
+    dT = sumArrays(dT, getTidyTotal(l,'despesas','TOTAL GERAL DAS DESPESAS'));
+    iT = sumArrays(iT, getTidyTotal(l,'impostos','TOTAL GERAL'));
+  }
+  const vD = fy ? dT.reduce((a,b)=>a+b,0) : dT[cm];
+  const vI = fy ? iT.reduce((a,b)=>a+b,0) : iT[cm];
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-title">Despesas</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">receipt_long</span> Despesas ${pl}</div><div class="kpi-value">${fmtShort(vD)}</div><div class="kpi-sparkline"><canvas id="spD"></canvas></div></div>
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">gavel</span> Impostos ${pl}</div><div class="kpi-value">${fmtShort(vI)}</div><div class="kpi-sparkline"><canvas id="spI"></canvas></div></div>
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">functions</span> Total Acumulado</div><div class="kpi-value">${fmtShort(dT.reduce((a,b)=>a+b,0)+iT.reduce((a,b)=>a+b,0))}</div><div class="kpi-sub" style="color:var(--gray)">Despesas + Impostos ${currentAno}</div></div>
+    </div>
+    <div class="charts-grid-equal">
+      <div class="chart-card"><div class="chart-card-title">Despesas vs Impostos</div><div class="chart-container h250"><canvas id="chartDesp"></canvas></div></div>
+      <div class="chart-card"><div class="chart-card-title">Top Despesas por Categoria</div><div class="chart-card-subtitle">Maiores gastos do periodo</div><div class="progress-list" id="topDesp"></div></div>
+    </div>`;
+
+  setTimeout(() => {
+    renderSparkline('spD', dT.slice(0,cm+1)); renderSparkline('spI', iT.slice(0,cm+1));
+
+    createChart('chartDesp', { type:'bar', data:{labels:MESES_LABEL,datasets:[
+      {label:'Despesas',data:dT,backgroundColor:RED,borderRadius:4,maxBarThickness:28},
+      {label:'Impostos',data:iT,backgroundColor:BLACK,borderRadius:4,maxBarThickness:28}
+    ]}, options:{...baseChartOpts(),scales:{x:{stacked:true,grid:{display:false},ticks:{font:CHART_FONT}},y:{stacked:true,grid:{color:GRID_COLOR},ticks:{font:CHART_FONT,callback:v=>fmtShort(v)}}}} });
+
+    // Top categories
+    const skip = ['TOTAL GERAL DAS DESPESAS','TOTAL DAS DESPESAS + IMPOSTOS'];
+    const cats = {};
+    for (const l of lojas) {
+      if (!dadosTidy[l] || !dadosTidy[l].despesas) continue;
+      for (const r of dadosTidy[l].despesas) { if (skip.includes(r.linha) || MESES.indexOf(r.coluna)<0) continue; const v = Number(r.valor)||0; if (v > 0) cats[r.linha] = (cats[r.linha]||0)+v; }
+    }
+    const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const max = sorted[0] ? sorted[0][1] : 1;
+    const el = document.getElementById('topDesp');
+    if (el) el.innerHTML = sorted.map(([ label, value], i) => `<div><div class="progress-item-label"><span>${label}</span><span>${fmtShort(value)}</span></div><div class="progress-bar-bg"><div class="progress-bar-fill ${i%2===0?'red':'black'}" style="width:${(value/max)*100}%"></div></div></div>`).join('');
+  }, 50);
+}
+
+// ===== ESTOQUE =====
+function renderEstoque() {
+  const lojas = currentLoja === 'ALL' ? ['PORTO BELO','IMPERIAL','MEGA CENTER'] : [currentLoja];
+  const cm = getMonth();
+  const fy = isFullYear();
+  const pl = fy ? 'Ano Todo' : MESES_LABEL[cm];
+  let cT = new Array(12).fill(0), eT = new Array(12).fill(0);
+  for (const l of lojas) {
+    cT = sumArrays(cT, getTidyTotal(l,'compras','TOTAL GERAL'));
+    eT = sumArrays(eT, getTidyTotal(l,'estoque','TOTAL GERAL'));
+  }
+  const vC = fy ? cT.reduce((a,b)=>a+b,0) : cT[cm];
+  const vEs = fy ? eT.reduce((a,b)=>a+b,0) : eT[cm];
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-title">Estoque & Compras</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr)">
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">shopping_cart</span> Compras ${pl}</div><div class="kpi-value">${fmtShort(vC)}</div><div class="kpi-sparkline"><canvas id="spC"></canvas></div></div>
+      <div class="kpi-card"><div class="kpi-label"><span class="material-icons-round">warehouse</span> Estoque ${pl}</div><div class="kpi-value">${fmtShort(vEs)}</div><div class="kpi-sparkline"><canvas id="spEs"></canvas></div></div>
+    </div>
+    <div class="charts-grid-equal">
+      <div class="chart-card"><div class="chart-card-title">Compras Mensais</div><div class="chart-container h250"><canvas id="chartC"></canvas></div></div>
+      <div class="chart-card"><div class="chart-card-title">Estoque Mensal</div><div class="chart-container h250"><canvas id="chartE"></canvas></div></div>
+    </div>`;
+
+  setTimeout(() => {
+    renderSparkline('spC', cT.slice(0,cm+1)); renderSparkline('spEs', eT.slice(0,cm+1));
+
+    createChart('chartC', { type:'bar', data:{labels:MESES_LABEL,datasets:[{label:'Compras',data:cT,backgroundColor:fy?RED:cT.map((_,i)=>i===cm?RED:BLACK),borderRadius:6,maxBarThickness:40}]},
+      options:{...baseChartOpts(),plugins:{legend:{display:false},tooltip:{backgroundColor:BLACK,callbacks:{label:ctx=>fmt(ctx.parsed.y)}}}} });
+
+    createChart('chartE', { type:'line', data:{labels:MESES_LABEL,datasets:[{label:'Estoque',data:eT,borderColor:RED,backgroundColor:RED_LIGHT,fill:true,tension:.35,borderWidth:2}]},
+      options:{...baseChartOpts(),plugins:{legend:{display:false},tooltip:{backgroundColor:BLACK,callbacks:{label:ctx=>fmt(ctx.parsed.y)}}}} });
+  }, 50);
+}
+
+// ===== EVENTS =====
+document.querySelectorAll('.store-tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.store-tab').forEach(b => b.classList.remove('active'));
+  t.classList.add('active'); currentLoja = t.dataset.loja; renderPage();
+}));
+
+document.getElementById('yearSelect').addEventListener('change', async e => {
+  currentAno = e.target.value;
+  showLoading('Carregando ' + currentAno + '...');
+  try {
+    for (const loja of ['PORTO BELO','IMPERIAL','MEGA CENTER']) {
+      const data = await apiFetch('tidy', `loja=${encodeURIComponent(loja)}&ano=${currentAno}`);
+      dadosTidy[loja] = {};
+      for (const reg of data.registros) { if (!dadosTidy[loja][reg.bloco]) dadosTidy[loja][reg.bloco] = []; dadosTidy[loja][reg.bloco].push(reg); }
+      await new Promise(r => setTimeout(r, 500));
+    }
+    hideLoading(); renderPage();
+  } catch (e) { hideLoading(); alert('Erro: ' + e.message); }
+});
+
+document.getElementById('monthSelect').addEventListener('change', e => {
+  selectedMonth = e.target.value;
+  renderPage();
+});
+
+document.querySelectorAll('.nav-item[data-section]').forEach(item => item.addEventListener('click', () => {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  currentSection = item.dataset.section;
+  document.getElementById('pageTitle').textContent = item.textContent.trim();
+  renderPage();
+}));
+
+// ===== INIT =====
+(async function() {
+  const cfg = getConfig();
+  if (cfg) { apiUrl = cfg.url; apiToken = cfg.token; document.getElementById('configModal').classList.add('hidden'); loadAllData(); }
+})();
+</script>
+</body>
+</html>

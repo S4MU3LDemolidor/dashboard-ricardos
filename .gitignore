@@ -1,0 +1,23 @@
+# Credenciais
+.env
+.env.*
+!.env.example
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (caso use futuramente)
+node_modules/
+package-lock.json
+
+# Logs
+*.log
